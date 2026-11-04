@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMART WORM BATTLE - CACING PINTAR</title>
+    <style>
+        :root {
+            --primary: #ef4444;
+            --primary-blue: #3b82f6;
+            --secondary: #10b981;
+            --dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-light: #f8fafc;
+            --gold: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 950px;
+            height: 700px;
+            position: relative;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 3px solid #334155;
+        }
+
+        /* Focus Overlay for Google Sites */
+        #focus-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        #focus-overlay h1 {
+            font-size: 2.4rem;
+            color: var(--gold);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            text-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
+        }
+
+        #focus-overlay p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            margin-bottom: 24px;
+            max-width: 550px;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            padding: 16px 40px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
+            transition: all 0.2s ease;
+            touch-action: none;
+        }
+
+        .start-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 10;
+            background-color: var(--card-bg);
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            touch-action: none;
+        }
+
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-gray { background: linear-gradient(135deg, #64748b, #475569); }
+
+        /* Game Canvas Layout */
+        #game-area {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #game-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0));
+        }
+
+        .hud-card {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hud-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        #question-banner {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 750px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 10px 16px;
+            text-align: center;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        #question-cat {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        #question-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background-color: #15803d;
+            touch-action: none;
+            outline: none;
+        }
+
+        /* D-PAD CONTROLS CONTAINER FOR 2 PLAYERS */
+        .controls-overlay {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .dpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 6px;
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .dpad-btn {
+            color: #0f172a;
+            border: 3px solid #ffffff;
+            border-radius: 14px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: pointer;
+            width: 70px;
+            height: 70px;
+        }
+
+        .dpad-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Player 1 D-Pad (Red) */
+        .p1-dpad .dpad-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-color: #fca5a5;
+        }
+
+        /* Player 2 D-Pad (Blue/Yellow) */
+        .p2-dpad .dpad-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: #93c5fd;
+        }
+
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
+
+        /* IFP Screen Styles (Large Touch Targets) */
+        @media (min-width: 1000px) or (min-height: 800px) {
+            .dpad-btn {
+                width: 84px;
+                height: 84px;
+                font-size: 2.3rem;
+                border-radius: 18px;
+            }
+        }
+
+        /* Result Screen */
+        .result-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .editor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.85rem;
+        }
+
+        .editor-table th, .editor-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .editor-table th {
+            background-color: rgba(0,0,0,0.3);
+            color: var(--gold);
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <!-- GOOGLE SITES FOCUS OVERLAY -->
+    <div id="focus-overlay">
+        <h1>🇮🇩 SMART WORM BATTLE 🇮🇩</h1>
+        <p>Game Edukasi Simple Past Tense untuk Laptop, HP, & IFP Screen Touch.</p>
+        <button class="start-btn" id="btn-focus-start">▶ KLIK UNTUK MAIN</button>
+    </div>
+
+    <!-- MAIN MENU SCREEN -->
+    <div id="screen-menu" class="screen active">
+        <div style="text-align:center; margin-bottom: 15px;">
+            <h1 style="color:var(--gold); font-size:1.8rem;">🇮🇩 SMART WORM BATTLE 🇮🇩</h1>
+            <p style="color:#94a3b8; font-size:0.9rem;">Pilih Mode Permainan</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin:auto 0;">
+            <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); text-align:center;">
+                <h3 style="color:var(--gold); margin-bottom:6px;">🎮 Solo vs AI</h3>
+                <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:12px;">Kumpulkan poin dan makan Verb 2 yang benar! (Navigasi Kiri)</p>
+                <button class="btn btn-green" style="width:100%;" onclick="startGame('vs_ai')">Mulai Bermain</button>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); text-align:center;">
+                <h3 style="color:var(--gold); margin-bottom:6px;">⚔️ 2 Player (1 Layar / Keyboard)</h3>
+                <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:12px;">P1 (Red): D-Pad Kiri / W,A,S,D | P2 (Blue): D-Pad Kanan / Panah</p>
+                <button class="btn btn-gold" style="width:100%;" onclick="startGame('local_2p')">Tanding 2 Player</button>
+            </div>
+        </div>
+
+        <div style="margin-top:16px; text-align:center;">
+            <button class="btn btn-gray" onclick="showScreen('screen-editor')">⚙️ Bank Soal & Dashboard Guru</button>
+        </div>
+    </div>
+
+    <!-- GAME CANVAS & PLAY SCREEN -->
+    <div id="screen-game" class="screen" style="padding:0; overflow:hidden;">
+        <div id="game-area">
+            <!-- HUD -->
+            <div id="game-hud">
+                <div class="hud-card" style="border-color:var(--primary);">
+                    <span style="font-size:1.2rem;">🔴</span>
+                    <div>
+                        <div style="font-size:0.65rem; color:#fca5a5;">P1 SKOR</div>
+                        <div class="hud-val" id="p1-score" style="color:#ef4444;">0</div>
+                    </div>
+                </div>
+
+                <div class="hud-card" style="border-color:var(--gold);">
+                    <span style="font-size:1.2rem;">❤️</span>
+                    <div>
+                        <div style="font-size:0.65rem; color:#fef08a;">NYAWA P1</div>
+                        <div class="hud-val" id="lives-display" style="color:var(--gold);">3</div>
+                    </div>
+                </div>
+
+                <div class="hud-card" style="border-color:var(--primary-blue);">
+                    <div style="text-align:right;">
+                        <div style="font-size:0.65rem; color:#93c5fd;" id="p2-label">AI WORM</div>
+                        <div class="hud-val" id="p2-score" style="color:#3b82f6;">0</div>
+                    </div>
+                    <span style="font-size:1.2rem;">🔵</span>
+                </div>
+            </div>
+
+            <!-- QUESTION BANNER -->
+            <div id="question-banner">
+                <div id="question-cat">SIMPLE PAST TENSE</div>
+                <div id="question-text">Loading question...</div>
+            </div>
+
+            <!-- CANVAS (tabindex="0" for Google Sites focus) -->
+            <canvas id="game-canvas" tabindex="0"></canvas>
+
+            <!-- DUAL ON-SCREEN D-PAD CONTROLS FOR 2 PLAYERS -->
+            <div class="controls-overlay">
+                <!-- P1 D-Pad (Red) -->
+                <div class="dpad-grid p1-dpad" id="p1-dpad-container">
+                    <button class="dpad-btn dpad-up" id="p1-dpad-up">▲</button>
+                    <button class="dpad-btn dpad-left" id="p1-dpad-left">◀</button>
+                    <button class="dpad-btn dpad-down" id="p1-dpad-down">▼</button>
+                    <button class="dpad-btn dpad-right" id="p1-dpad-right">▶</button>
+                </div>
+
+                <!-- P2 D-Pad (Blue) -->
+                <div class="dpad-grid p2-dpad" id="p2-dpad-container">
+                    <button class="dpad-btn dpad-up" id="p2-dpad-up">▲</button>
+                    <button class="dpad-btn dpad-left" id="p2-dpad-left">◀</button>
+                    <button class="dpad-btn dpad-down" id="p2-dpad-down">▼</button>
+                    <button class="dpad-btn dpad-right" id="p2-dpad-right">▶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="screen-result" class="screen">
+        <div style="text-align:center;">
+            <h1 id="winner-title" style="font-size:2rem; color:var(--gold);">🏆 GAME OVER</h1>
+            <p style="color:#94a3b8; font-size:0.9rem;">Hasil Permainan Simple Past Tense</p>
+        </div>
+
+        <div class="result-card">
+            <h2 id="final-score" style="font-size:2.2rem; color:var(--gold); margin-bottom:8px;">0 Pts</h2>
+            <p id="final-stats" style="color:#cbd5e1; font-size:0.9rem;">Jawaban Benar: 0 | Salah: 0</p>
+        </div>
+
+        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:12px; margin-bottom:16px; max-height:180px; overflow-y:auto;" id="review-list">
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:auto;">
+            <button class="btn btn-green" onclick="startGame(currentGameMode)">🔄 Main Lagi</button>
+            <button class="btn btn-gray" onclick="showScreen('screen-menu')">🏠 Menu Utama</button>
+        </div>
+    </div>
+
+    <!-- TEACHER DASHBOARD SCREEN -->
+    <div id="screen-editor" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="color:var(--gold); font-size:1.3rem;">⚙️ Bank Soal & Dashboard Guru</h2>
+            <button class="btn btn-gray" style="padding:6px 12px; font-size:0.85rem;" onclick="showScreen('screen-menu')">Kembali</button>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:12px;">
+            <h4 style="color:var(--gold); margin-bottom:8px;">Tambah Soal Baru</h4>
+            <input type="text" id="add-q-text" class="input-box" placeholder="Soal (contoh: We _____ the ceremony yesterday.)">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                <input type="text" id="add-opt-0" class="input-box" placeholder="Jawaban Benar (Verb 2)">
+                <input type="text" id="add-opt-1" class="input-box" placeholder="Jawaban Pengecoh 1">
+                <input type="text" id="add-opt-2" class="input-box" placeholder="Jawaban Pengecoh 2">
+                <input type="text" id="add-opt-3" class="input-box" placeholder="Jawaban Pengecoh 3">
+            </div>
+            <button class="btn btn-green" style="margin-top:6px; width:100%;" onclick="addNewQuestion()">+ Simpan Soal</button>
+        </div>
+
+        <h4 style="color:var(--gold);">Daftar Soal Aktif (<span id="q-count">0</span>)</h4>
+        <table class="editor-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Soal</th>
+                    <th>Kunci</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="question-table-body">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+// --- AUDIO SYNTHESIZER ---
+const AudioEngine = {
+    ctx: null,
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    playCorrect() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(783.99, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    },
+    playWrong() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    }
+};
+
+// --- DEFAULT BANK SOAL ---
+let questionBank = [
+    { id: 1, question: "We _____ the Independence Day ceremony yesterday.", options: ["celebrated", "celebrate", "celebrating", "celebrates"], answer: "celebrated", explanation: "Simple Past Tense (positif) menggunakan Verb 2 (celebrated)." },
+    { id: 2, question: "The students _____ traditional games last Friday.", options: ["played", "play", "plays", "playing"], answer: "played", explanation: "Kalimat positif masa lalu memakai Verb 2 (played)." },
+    { id: 3, question: "We _____ the flag ceremony last Monday.", options: ["didn't attend", "didn't attended", "don't attended", "not attend"], answer: "didn't attend", explanation: "Bentuk negatif: didn't + Verb 1 (didn't attend)." },
+    { id: 4, question: "My friends _____ in the sack race yesterday.", options: ["didn't participate", "didn't participated", "don't participate", "not participated"], answer: "didn't participate", explanation: "Rumus negatif: Subject + didn't + Verb 1." },
+    { id: 5, question: "The students _____ red and white decorations last week.", options: ["made", "make", "makes", "making"], answer: "made", explanation: "Verb 2 dari 'make' adalah 'made'." },
+    { id: 6, question: "We _____ the national anthem yesterday.", options: ["sang", "sing", "singing", "sings"], answer: "sang", explanation: "Verb 2 dari 'sing' adalah 'sang'." }
+];
+
+// --- GAME ENGINE STATE ---
+let canvas, ctx;
+let currentGameMode = 'vs_ai';
+let gameActive = false;
+let lives = 3;
+let currentQuestionIndex = 0;
+let activeFoods = [];
+let floatingTexts = [];
+
+let p1Worm = {};
+let p2Worm = {};
+
+// WARNA-WARNI SENADA P1 (TEMA MERAH-PINK-ORANYE CERAH)
+const p1Palette = [
+    '#f87171', '#ef4444', '#dc2626', '#b91c1c', 
+    '#fb7185', '#f43f5e', '#e11d48', '#be123c', 
+    '#fb923c', '#f97316', '#ea580c', '#c2410c'
+];
+
+// WARNA-WARNI SENADA P2 (TEMA BIRU-CYAN-UNGU CERAH)
+const p2Palette = [
+    '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', 
+    '#38bdf8', '#0ea5e9', '#0284c7', '#0369a1', 
+    '#818cf8', '#6366f1', '#4f46e5', '#4338ca'
+];
+
+function initWorm(type, startX, startY, isAI = false) {
+    let segments = [];
+    const palette = (type === 'p1') ? p1Palette : p2Palette;
+    for (let i = 0; i < 14; i++) {
+        segments.push({ x: startX - i * 10, y: startY });
+    }
+    return {
+        type: type,
+        palette: palette,
+        segments: segments,
+        angle: 0,
+        targetAngle: 0,
+        speed: 3.2,
+        score: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        isAI: isAI,
+        targetFood: null,
+        antennaWiggle: 0
+    };
+}
+
+// --- SCREEN MANAGEMENT ---
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-editor') renderEditorTable();
+}
+
+// GOOGLE SITES FOCUS OVERLAY EVENT
+document.getElementById('btn-focus-start').addEventListener('click', function() {
+    AudioEngine.init();
+    document.getElementById('focus-overlay').style.display = 'none';
+    const cvs = document.getElementById('game-canvas');
+    if (cvs) {
+        cvs.focus();
+    }
+    window.focus();
+});
+
+// --- 1. LAPTOP - KEYBOARD CONTROLS (WASD & ARROWS) WITH e.preventDefault() ---
+window.addEventListener('keydown', function(e) {
+    const key = e.key;
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "w", "a", "s", "d", "W", "A", "S", "D"].includes(key)) {
+        e.preventDefault();
+    }
+
+    if (!gameActive) return;
+
+    if (currentGameMode === 'vs_ai') {
+        if (key === 'ArrowUp' || key === 'w' || key === 'W') p1Worm.targetAngle = -Math.PI / 2;
+        if (key === 'ArrowDown' || key === 's' || key === 'S') p1Worm.targetAngle = Math.PI / 2;
+        if (key === 'ArrowLeft' || key === 'a' || key === 'A') p1Worm.targetAngle = Math.PI;
+        if (key === 'ArrowRight' || key === 'd' || key === 'D') p1Worm.targetAngle = 0;
+    } else if (currentGameMode === 'local_2p') {
+        // Player 1 (W,A,S,D)
+        if (key === 'w' || key === 'W') p1Worm.targetAngle = -Math.PI / 2;
+        if (key === 's' || key === 'S') p1Worm.targetAngle = Math.PI / 2;
+        if (key === 'a' || key === 'A') p1Worm.targetAngle = Math.PI;
+        if (key === 'd' || key === 'D') p1Worm.targetAngle = 0;
+
+        // Player 2 (Panah Keyboard)
+        if (key === 'ArrowUp') p2Worm.targetAngle = -Math.PI / 2;
+        if (key === 'ArrowDown') p2Worm.targetAngle = Math.PI / 2;
+        if (key === 'ArrowLeft') p2Worm.targetAngle = Math.PI;
+        if (key === 'ArrowRight') p2Worm.targetAngle = 0;
+    }
+}, { passive: false });
+
+// --- 2. HP & IFP - DUAL ON-SCREEN D-PAD CONTROLS ---
+function setupDPadButton(btnId, wormRef, targetAngle) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+
+    const handleDirectionInput = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (gameActive) {
+            if (wormRef === 'p1' && p1Worm) p1Worm.targetAngle = targetAngle;
+            if (wormRef === 'p2' && p2Worm && !p2Worm.isAI) p2Worm.targetAngle = targetAngle;
+        }
+    };
+
+    ['pointerdown', 'touchstart', 'mousedown', 'click'].forEach(eventType => {
+        btn.addEventListener(eventType, handleDirectionInput, { passive: false });
+    });
+}
+
+// Setup D-Pad Player 1 (Red - Kiri)
+setupDPadButton('p1-dpad-up', 'p1', -Math.PI / 2);
+setupDPadButton('p1-dpad-down', 'p1', Math.PI / 2);
+setupDPadButton('p1-dpad-left', 'p1', Math.PI);
+setupDPadButton('p1-dpad-right', 'p1', 0);
+
+// Setup D-Pad Player 2 (Blue - Kanan)
+setupDPadButton('p2-dpad-up', 'p2', -Math.PI / 2);
+setupDPadButton('p2-dpad-down', 'p2', Math.PI / 2);
+setupDPadButton('p2-dpad-left', 'p2', Math.PI);
+setupDPadButton('p2-dpad-right', 'p2', 0);
+
+// --- 3. HP & IFP - SWIPE CONTROLS ---
+let touchStartX = 0;
+let touchStartY = 0;
+
+window.addEventListener('touchstart', function(e) {
+    if (e.touches && e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }
+}, { passive: true });
+
+window.addEventListener('touchend', function(e) {
+    if (!gameActive || !e.changedTouches || e.changedTouches.length === 0) return;
+    
+    let touchEndX = e.changedTouches[0].clientX;
+    let touchEndY = e.changedTouches[0].clientY;
+    
+    let diffX = touchEndX - touchStartX;
+    let diffY = touchEndY - touchStartY;
+
+    if (Math.abs(diffX) > 30 || Math.abs(diffY) > 30) {
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            p1Worm.targetAngle = diffX > 0 ? 0 : Math.PI;
+        } else {
+            p1Worm.targetAngle = diffY > 0 ? Math.PI / 2 : -Math.PI / 2;
+        }
+    }
+}, { passive: true });
+
+// --- GAME LOGIC ---
+function startGame(mode) {
+    AudioEngine.init();
+    currentGameMode = mode;
+    showScreen('screen-game');
+
+    canvas = document.getElementById('game-canvas');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    ctx = canvas.getContext('2d');
+
+    canvas.focus();
+
+    p1Worm = initWorm('p1', 180, canvas.height / 2, false);
+    p2Worm = initWorm('p2', canvas.width - 180, canvas.height / 2, mode === 'vs_ai');
+
+    document.getElementById('p2-label').innerText = mode === 'vs_ai' ? "AI WORM" : "PLAYER 2";
+    
+    const p2DpadContainer = document.getElementById('p2-dpad-container');
+    if (mode === 'vs_ai') {
+        p2DpadContainer.style.display = 'none';
+    } else {
+        p2DpadContainer.style.display = 'grid';
+    }
+
+    lives = 3;
+    currentQuestionIndex = 0;
+    gameActive = true;
+
+    updateHUD();
+    loadQuestion();
+
+    requestAnimationFrame(gameLoop);
+}
+
+function updateHUD() {
+    document.getElementById('p1-score').innerText = p1Worm.score;
+    document.getElementById('p2-score').innerText = p2Worm.score;
+    document.getElementById('lives-display').innerText = lives;
+}
+
+function loadQuestion() {
+    if (questionBank.length === 0) return;
+    const q = questionBank[currentQuestionIndex % questionBank.length];
+    document.getElementById('question-text').innerText = q.question;
+
+    const shuffledOpts = [...q.options].sort(() => Math.random() - 0.5);
+    activeFoods = [];
+
+    const padding = 80;
+    const availableWidth = canvas.width - padding * 2;
+    const availableHeight = canvas.height - padding * 2 - 130;
+
+    shuffledOpts.forEach((optText) => {
+        activeFoods.push({
+            x: padding + Math.random() * availableWidth,
+            y: 140 + Math.random() * availableHeight,
+            text: optText,
+            isCorrect: optText === q.answer,
+            radius: 28
+        });
+    });
+}
+
+function gameLoop() {
+    if (!gameActive) return;
+
+    updatePhysics();
+    checkCollisions();
+    renderArena();
+
+    requestAnimationFrame(gameLoop);
+}
+
+function updatePhysics() {
+    [p1Worm, p2Worm].forEach((worm, idx) => {
+        // Smooth rotation angle interpolation
+        let diff = worm.targetAngle - worm.angle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        worm.angle += diff * 0.15;
+        
+        // Antenna Animation Wiggle
+        worm.antennaWiggle += 0.12;
+
+        // AI Logic
+        if (worm.isAI) {
+            if (!worm.targetFood || Math.random() < 0.02) {
+                const correctFood = activeFoods.find(f => f.isCorrect);
+                if (correctFood && Math.random() < 0.75) {
+                    worm.targetFood = correctFood;
+                } else if (activeFoods.length > 0) {
+                    worm.targetFood = activeFoods[Math.floor(Math.random() * activeFoods.length)];
+                }
+            }
+            if (worm.targetFood) {
+                const head = worm.segments[0];
+                worm.targetAngle = Math.atan2(worm.targetFood.y - head.y, worm.targetFood.x - head.x);
+            }
+        }
+
+        // Move Head
+        const head = worm.segments[0];
+        head.x += Math.cos(worm.angle) * worm.speed;
+        head.y += Math.sin(worm.angle) * worm.speed;
+
+        // Wall Reflection/Bounce Check
+        const margin = 20;
+        const topMargin = 130;
+        if (head.x < margin) {
+            head.x = margin;
+            worm.targetAngle = Math.PI - worm.angle;
+        } else if (head.x > canvas.width - margin) {
+            head.x = canvas.width - margin;
+            worm.targetAngle = Math.PI - worm.angle;
+        }
+
+        if (head.y < topMargin) {
+            head.y = topMargin;
+            worm.targetAngle = -worm.angle;
+        } else if (head.y > canvas.height - margin) {
+            head.y = canvas.height - margin;
+            worm.targetAngle = -worm.angle;
+        }
+
+        // IK Segment Follow
+        const segDist = 10;
+        for (let i = 1; i < worm.segments.length; i++) {
+            const prev = worm.segments[i - 1];
+            const curr = worm.segments[i];
+            const dx = prev.x - curr.x;
+            const dy = prev.y - curr.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist > segDist) {
+                const angle = Math.atan2(dy, dx);
+                curr.x = prev.x - Math.cos(angle) * segDist;
+                curr.y = prev.y - Math.sin(angle) * segDist;
+            }
+        }
+    });
+
+    // Update Floating Text Animations
+    floatingTexts.forEach((ft, i) => {
+        ft.y -= 1;
+        ft.alpha -= 0.02;
+        if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+    });
+}
+
+function checkCollisions() {
+    [p1Worm, p2Worm].forEach((worm, playerIdx) => {
+        const head = worm.segments[0];
+        activeFoods.forEach((food) => {
+            const dist = Math.hypot(head.x - food.x, head.y - food.y);
+            if (dist < food.radius + 12) {
+                if (food.isCorrect) {
+                    AudioEngine.playCorrect();
+                    worm.score += 10;
+                    worm.correctCount++;
+                    
+                    // Grow worm
+                    const tail = worm.segments[worm.segments.length - 1];
+                    worm.segments.push({ x: tail.x, y: tail.y });
+                    worm.segments.push({ x: tail.x, y: tail.y });
+
+                    floatingTexts.push({ x: food.x, y: food.y, text: "BENAR! +10", color: "#4ade80", alpha: 1 });
+                    
+                    currentQuestionIndex++;
+                    loadQuestion();
+                } else {
+                    AudioEngine.playWrong();
+                    worm.score = Math.max(0, worm.score - 5);
+                    worm.wrongCount++;
+                    
+                    if (playerIdx === 0) {
+                        lives--;
+                        floatingTexts.push({ x: food.x, y: food.y, text: "SALAH! -1 ❤️", color: "#f87171", alpha: 1 });
+                        if (lives <= 0) endGame();
+                    } else {
+                        floatingTexts.push({ x: food.x, y: food.y, text: "SALAH! -5 Pts", color: "#f87171", alpha: 1 });
+                    }
+
+                    // Shrink worm
+                    if (worm.segments.length > 5) worm.segments.pop();
+
+                    activeFoods = activeFoods.filter(f => f !== food);
+                }
+
+                updateHUD();
+            }
+        });
+    });
+}
+
+function renderArena() {
+    const fieldTop = 120;
+    const fieldLeft = 15;
+    const fieldWidth = canvas.width - 30;
+    const fieldHeight = canvas.height - 135;
+    const fieldCenterY = fieldTop + fieldHeight / 2;
+    const fieldCenterX = fieldLeft + fieldWidth / 2;
+
+    // 1. LAPANGAN BOLA NATURAL (Dual-Tone Lawn Stripes)
+    const stripeWidth = 55;
+    for (let x = fieldLeft; x < fieldLeft + fieldWidth; x += stripeWidth) {
+        let w = Math.min(stripeWidth, fieldLeft + fieldWidth - x);
+        ctx.fillStyle = (Math.floor((x - fieldLeft) / stripeWidth) % 2 === 0) ? '#15803d' : '#166534';
+        ctx.fillRect(x, fieldTop, w, fieldHeight);
+    }
+
+    // Border Lapangan
+    ctx.strokeStyle = '#0f5127';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(fieldLeft, fieldTop, fieldWidth, fieldHeight);
+
+    // 2. GARIS LAPANGAN BOLA NATURAL
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.lineWidth = 3.5;
+
+    // Outer Boundary Line
+    ctx.strokeRect(fieldLeft + 5, fieldTop + 5, fieldWidth - 10, fieldHeight - 10);
+
+    // Center Line
+    ctx.beginPath();
+    ctx.moveTo(fieldCenterX, fieldTop + 5);
+    ctx.lineTo(fieldCenterX, fieldTop + fieldHeight - 5);
+    ctx.stroke();
+
+    // Center Circle & Spot
+    ctx.beginPath();
+    ctx.arc(fieldCenterX, fieldCenterY, 55, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(fieldCenterX, fieldCenterY, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Penalty Area Left
+    const penBoxWidth = 75;
+    const penBoxHeight = 160;
+    ctx.strokeRect(fieldLeft + 5, fieldCenterY - penBoxHeight / 2, penBoxWidth, penBoxHeight);
+    ctx.strokeRect(fieldLeft + 5, fieldCenterY - 45, 28, 90);
+    ctx.beginPath();
+    ctx.arc(fieldLeft + 5 + penBoxWidth, fieldCenterY, 35, -Math.PI / 3, Math.PI / 3);
+    ctx.stroke();
+
+    // Penalty Area Right
+    ctx.strokeRect(fieldLeft + fieldWidth - 5 - penBoxWidth, fieldCenterY - penBoxHeight / 2, penBoxWidth, penBoxHeight);
+    ctx.strokeRect(fieldLeft + fieldWidth - 5 - 28, fieldCenterY - 45, 28, 90);
+    ctx.beginPath();
+    ctx.arc(fieldLeft + fieldWidth - 5 - penBoxWidth, fieldCenterY, 35, (2 * Math.PI) / 3, (4 * Math.PI) / 3);
+    ctx.stroke();
+
+    // Corner Arcs
+    const cornerRadius = 15;
+    ctx.beginPath(); ctx.arc(fieldLeft + 5, fieldTop + 5, cornerRadius, 0, Math.PI / 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(fieldLeft + 5, fieldTop + fieldHeight - 5, cornerRadius, -Math.PI / 2, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(fieldLeft + fieldWidth - 5, fieldTop + 5, cornerRadius, Math.PI / 2, Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(fieldLeft + fieldWidth - 5, fieldTop + fieldHeight - 5, cornerRadius, Math.PI, (3 * Math.PI) / 2); ctx.stroke();
+
+    // 3. Render Gelembung Jawaban Emas
+    activeFoods.forEach(food => {
+        ctx.save();
+        ctx.shadowColor = 'rgba(245, 158, 11, 0.5)';
+        ctx.shadowBlur = 10;
+
+        ctx.fillStyle = '#78350f';
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.arc(food.x, food.y, food.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(food.text, food.x, food.y);
+        ctx.restore();
+    });
+
+    // 4. Render Cacing Imut Warna-Warni Senada & Antena
+    [p2Worm, p1Worm].forEach(worm => {
+        // Draw Segments dari Ekor ke Kepala (Gradasi Senada)
+        for (let i = worm.segments.length - 1; i >= 0; i--) {
+            const seg = worm.segments[i];
+            const isHead = i === 0;
+            const radius = isHead ? 15 : Math.max(6, 13 - (i * 0.4));
+            const segColor = worm.palette[i % worm.palette.length];
+
+            ctx.save();
+            ctx.fillStyle = segColor;
+            ctx.beginPath();
+            ctx.arc(seg.x, seg.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Kilau halus pada tiap segmen
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.beginPath();
+            ctx.arc(seg.x - radius * 0.3, seg.y - radius * 0.3, radius * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ring lembut segmen
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // RENDER KEPALA: MATAR IMUT, PIPI CHUBBY & ANTENA
+            if (isHead) {
+                // A. ANTENA IMUT DENGAN GOYANGAN DINAMIS
+                const wiggle = Math.sin(worm.antennaWiggle) * 0.15;
+                const antAngle1 = worm.angle - 0.6 + wiggle;
+                const antAngle2 = worm.angle + 0.6 - wiggle;
+                const antLen = 18;
+
+                // Antena Kiri & Kanan
+                [antAngle1, antAngle2].forEach(antAngle => {
+                    const antTipX = seg.x + Math.cos(antAngle) * antLen;
+                    const antTipY = seg.y + Math.sin(antAngle) * antLen;
+
+                    // Batang Antena
+                    ctx.strokeStyle = segColor;
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(seg.x, seg.y);
+                    ctx.lineTo(antTipX, antTipY);
+                    ctx.stroke();
+
+                    // Ujung Antena (Bola Emas Kecil Lumut)
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(antTipX, antTipY, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                });
+
+                // B. MATA IMUT ANIME (Besar + Bintang/Bintik Kilau)
+                const eyeOffsetAngle = 0.45;
+                const eyeDist = 8;
+                const eye1X = seg.x + Math.cos(worm.angle - eyeOffsetAngle) * eyeDist;
+                const eye1Y = seg.y + Math.sin(worm.angle - eyeOffsetAngle) * eyeDist;
+                const eye2X = seg.x + Math.cos(worm.angle + eyeOffsetAngle) * eyeDist;
+                const eye2Y = seg.y + Math.sin(worm.angle + eyeOffsetAngle) * eyeDist;
+
+                // Mata Putih (Besar)
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(eye1X, eye1Y, 5, 0, Math.PI * 2);
+                ctx.arc(eye2X, eye2Y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pupil Hitam
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(eye1X + Math.cos(worm.angle)*1, eye1Y + Math.sin(worm.angle)*1, 3, 0, Math.PI * 2);
+                ctx.arc(eye2X + Math.cos(worm.angle)*1, eye2Y + Math.sin(worm.angle)*1, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Kilau Bintik Putih Mata (Cute Anime Sparkle)
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(eye1X - 1, eye1Y - 1, 1.3, 0, Math.PI * 2);
+                ctx.arc(eye2X - 1, eye2Y - 1, 1.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // C. PIPI MERAH MERONA (Cheeks Blush Imut)
+                const cheekDist = 11;
+                const cheek1X = seg.x + Math.cos(worm.angle - 0.9) * cheekDist;
+                const cheek1Y = seg.y + Math.sin(worm.angle - 0.9) * cheekDist;
+                const cheek2X = seg.x + Math.cos(worm.angle + 0.9) * cheekDist;
+                const cheek2Y = seg.y + Math.sin(worm.angle + 0.9) * cheekDist;
+
+                ctx.fillStyle = 'rgba(244, 114, 182, 0.65)';
+                ctx.beginPath();
+                ctx.arc(cheek1X, cheek1Y, 3.5, 0, Math.PI * 2);
+                ctx.arc(cheek2X, cheek2Y, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+    });
+
+    // 5. Render Floating Text Effect
+    floatingTexts.forEach(ft => {
+        ctx.save();
+        ctx.fillStyle = ft.color;
+        ctx.globalAlpha = ft.alpha;
+        ctx.font = 'bold 15px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+    });
+}
+
+function endGame() {
+    gameActive = false;
+    showScreen('screen-result');
+
+    const winnerTitle = document.getElementById('winner-title');
+    if (p1Worm.score > p2Worm.score) {
+        winnerTitle.innerText = "🏆 PLAYER 1 WINS!";
+        winnerTitle.style.color = "#ef4444";
+    } else if (p2Worm.score > p1Worm.score) {
+        winnerTitle.innerText = currentGameMode === 'vs_ai' ? "🤖 AI WORM WINS!" : "🏆 PLAYER 2 WINS!";
+        winnerTitle.style.color = "#3b82f6";
+    } else {
+        winnerTitle.innerText = "🤝 SERI!";
+        winnerTitle.style.color = "#fbbf24";
+    }
+
+    document.getElementById('final-score').innerText = p1Worm.score + " Pts";
+    document.getElementById('final-stats').innerText = `Jawaban Benar: ${p1Worm.correctCount} | Salah: ${p1Worm.wrongCount}`;
+
+    const reviewList = document.getElementById('review-list');
+    reviewList.innerHTML = "<h4 style='color:var(--gold); margin-bottom:6px;'>Pembahasan Soal:</h4>";
+    questionBank.forEach((q, i) => {
+        reviewList.innerHTML += `
+            <div style="margin-bottom:8px; font-size:0.8rem; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
+                <p><b>${i+1}. ${q.question}</b></p>
+                <p style="color:#4ade80;">Jawaban: ${q.answer}</p>
+                <p style="color:#94a3b8; font-style:italic;">${q.explanation}</p>
+            </div>
+        `;
+    });
+}
+
+// --- DASHBOARD GURU LOGIC ---
+function renderEditorTable() {
+    const tbody = document.getElementById('question-table-body');
+    tbody.innerHTML = '';
+    document.getElementById('q-count').innerText = questionBank.length;
+
+    questionBank.forEach((q, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${q.question}</td>
+                <td><span style="color:#4ade80; font-weight:bold;">${q.answer}</span></td>
+                <td>
+                    <button class="btn btn-red" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteQuestion(${q.id})">Hapus</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function addNewQuestion() {
+    const text = document.getElementById('add-q-text').value;
+    const opt0 = document.getElementById('add-opt-0').value;
+    const opt1 = document.getElementById('add-opt-1').value;
+    const opt2 = document.getElementById('add-opt-2').value;
+    const opt3 = document.getElementById('add-opt-3').value;
+
+    if (!text || !opt0 || !opt1) {
+        alert("Mohon isi soal dan minimal 2 pilihan jawaban.");
+        return;
+    }
+
+    questionBank.push({
+        id: Date.now(),
+        question: text,
+        options: [opt0, opt1, opt2 || "none", opt3 || "none"].filter(o => o !== "none"),
+        answer: opt0,
+        explanation: "Simple Past Tense (Verb 2 / didn't + V1)."
+    });
+
+    renderEditorTable();
+    document.getElementById('add-q-text').value = '';
+    document.getElementById('add-opt-0').value = '';
+    document.getElementById('add-opt-1').value = '';
+    document.getElementById('add-opt-2').value = '';
+    document.getElementById('add-opt-3').value = '';
+}
+
+function deleteQuestion(id) {
+    questionBank = questionBank.filter(q => q.id !== id);
+    renderEditorTable();
+}
+</script>
+
+</body>
+</html>
